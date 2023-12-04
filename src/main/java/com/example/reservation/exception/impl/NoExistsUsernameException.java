@@ -3,7 +3,7 @@ package com.example.reservation.exception.impl;
 import com.example.reservation.exception.AbstractException;
 import org.springframework.http.HttpStatus;
 
-public class NoMatchPassword extends AbstractException {
+public class NoExistsUsernameException extends AbstractException {
     @Override
     public int getStatusCode() {
         return HttpStatus.BAD_REQUEST.value();
@@ -11,6 +11,6 @@ public class NoMatchPassword extends AbstractException {
 
     @Override
     public String getMessage() {
-        return "잘못된 비밀번호 입니다.";
+        return "존재하지 않는 계정 입니다.";
     }
 }

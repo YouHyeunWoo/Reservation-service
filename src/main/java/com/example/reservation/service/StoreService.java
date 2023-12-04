@@ -2,8 +2,8 @@ package com.example.reservation.service;
 
 import com.example.reservation.domain.StoreEntity;
 import com.example.reservation.exception.impl.AlreadyExistsStoreException;
-import com.example.reservation.exception.impl.NoMatchManagerNameException;
-import com.example.reservation.exception.impl.NoStorenameException;
+import com.example.reservation.exception.impl.NoMatchNameException;
+import com.example.reservation.exception.impl.NoExistsStorenameException;
 import com.example.reservation.model.Store;
 import com.example.reservation.repository.StoreRepository;
 import lombok.AllArgsConstructor;
@@ -38,7 +38,7 @@ public class StoreService {
         StoreEntity storeEntity = getStoreEntity(store.getStoreName());
 
         if (!Objects.equals(storeEntity.getManagerName(), store.getManagerName())) {
-            throw new NoMatchManagerNameException();
+            throw new NoMatchNameException();
         }
         storeEntity.setExplanation(store.getExplanation());
 
@@ -52,7 +52,7 @@ public class StoreService {
         StoreEntity storeEntity = getStoreEntity(storeName);
 
         if (!Objects.equals(storeEntity.getManagerName(), managerName)) {
-            throw new NoMatchManagerNameException();
+            throw new NoMatchNameException();
         }
 
         this.storeRepository.deleteByStoreName(storeEntity.getStoreName());
@@ -74,7 +74,7 @@ public class StoreService {
     //storeEntity 찾는 메소드 추출(중복 코딩 제거)
     private StoreEntity getStoreEntity(String storeName) {
         return this.storeRepository.findByStoreName(storeName)
-                .orElseThrow(NoStorenameException::new);
+                .orElseThrow(NoExistsStorenameException::new);
     }
 
 }

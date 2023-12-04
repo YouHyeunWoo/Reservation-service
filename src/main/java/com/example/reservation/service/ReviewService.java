@@ -1,22 +1,24 @@
 package com.example.reservation.service;
 
+import com.example.reservation.domain.MemberEntity;
 import com.example.reservation.domain.ReservationEntity;
 import com.example.reservation.domain.ReviewEntity;
 import com.example.reservation.domain.StoreEntity;
-import com.example.reservation.exception.impl.NoExistsReservationException;
-import com.example.reservation.exception.impl.NoExistsReviewException;
-import com.example.reservation.exception.impl.NoStorenameException;
+import com.example.reservation.exception.impl.*;
 import com.example.reservation.model.FindReview;
 import com.example.reservation.model.FindReviewResult;
 import com.example.reservation.model.Review;
+import com.example.reservation.repository.MemberRepository;
 import com.example.reservation.repository.ReservationRepository;
 import com.example.reservation.repository.ReviewRepository;
 import com.example.reservation.repository.StoreRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +28,8 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReservationRepository reservationRepository;
     private final StoreRepository storeRepository;
+    private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     //리뷰 작성
     //예약을 해서 이용을 한 사람만 리뷰 작성 가능
@@ -77,18 +81,66 @@ public class ReviewService {
         this.reviewRepository.save(reviewEntity);
     }
 
-    //리뷰 삭제
-    public ReviewEntity deleteReview(){
+    //리뷰 삭제 (고객용)
+    //삭제는 아이디 비밀번호를 한번 입력해야 삭제 가능
+    //리뷰 삭제를 위해선 리뷰에 등록된 아이디와 입력한 아이디가 맞아야 하고
+    //입력한 비밀번호와 membertable의 비밀번호가 맞아야 삭제 가능
+    public ReviewEntity deleteReviewUser(Long reviewId, String userName, String password) {
+        //입력한 아이디가 존재하는지 확인
+        MemberEntity memberEntity = this.memberRepository.findByUserName(userName)
+                .orElseThrow(NoExistsUsernameException::new);
+        //예약내역이 있는지 확인
+        ReviewEntity reviewEntity = this.reviewRepository.findById(reviewId)
+                .orElseThrow(NoExistsReservationException::new);
 
+        //리뷰에 등록된 이름과 입력한 이름이 맞는지 확인
+        if (!Objects.equals(reviewEntity.getName(), userName)) {
+            throw new NoMatchNameException();
+        }
 
+        //memberEntity의 비밀번호와 입력한 비밀번호가 일치하는지 확인
+        if (!passwordEncoder.matches(password, memberEntity.getPassword())) {
+            throw new NoMatchPasswordException();
+        }
+        //맞으면 리뷰 삭제
+        this.reviewRepository.deleteById(reviewId);
 
-        return null;
+        return reviewEntity;
+    }
+
+    //리뷰 삭제 매장 관리자용
+    public ReviewEntity deleteReviewManager(Long reviewId, String userName, String password) {
+        //reviewId로 등록된 리뷰가 있는지 확인
+        ReviewEntity reviewEntity = this.reviewRepository.findById(reviewId)
+                .orElseThrow(NoExistsReservationException::new);
+        //입력한 아이디가 존재하는지 확인
+        MemberEntity memberEntity = this.memberRepository.findByUserName(userName)
+                .orElseThrow(NoExistsUsernameException::new);
+
+        //reviewEntity의 가게이름으로 storeEntity에서 가게가 있는지 확인
+        StoreEntity storeEntity = this.storeRepository.findByStoreName(reviewEntity.getStoreName())
+                .orElseThrow(NoExistsStorenameException::new);
+
+        //그 가게에 등록된 점장의 이름과 입력한 이름이 맞는지 확인
+        if (!Objects.equals(storeEntity.getManagerName(), userName)) {
+            throw new NoMatchNameException();
+        }
+
+        //member 테이블에 등록된 비밀번호와 입력한 password가 일치하는지 확인
+        if (!passwordEncoder.matches(password, memberEntity.getPassword())) {
+            throw new NoMatchPasswordException();
+        }
+
+        //모든 정보가 일치하면 리뷰 삭제
+        this.reviewRepository.deleteById(reviewId);
+
+        return reviewEntity;
     }
 
     //메서드 추출
     //입력으로 들어온 매장 이름이 존재하는지 확인
     private StoreEntity getStoreEntity(String storeName) {
         return this.storeRepository.findByStoreName(storeName)
-                .orElseThrow(NoStorenameException::new);
+                .orElseThrow(NoExistsStorenameException::new);
     }
 }

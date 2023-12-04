@@ -2,8 +2,8 @@ package com.example.reservation.service;
 
 import com.example.reservation.domain.MemberEntity;
 import com.example.reservation.exception.impl.AlreadyExistsUserException;
-import com.example.reservation.exception.impl.NoMatchPassword;
-import com.example.reservation.exception.impl.NoUsernameException;
+import com.example.reservation.exception.impl.NoMatchPasswordException;
+import com.example.reservation.exception.impl.NoExistsUsernameException;
 import com.example.reservation.model.Auth;
 import com.example.reservation.repository.MemberRepository;
 import lombok.AllArgsConstructor;
@@ -24,7 +24,7 @@ public class MemberService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return this.memberRepository.findByUserName(username)
-                .orElseThrow(NoUsernameException::new);
+                .orElseThrow(NoExistsUsernameException::new);
     }
 
     //회원 가입 메소드
@@ -43,10 +43,10 @@ public class MemberService implements UserDetailsService {
     //아이디와 비밀번호 입력 >> 데이터베이스에 등록되어있는 암호화(인코딩)된 비밀번호와 매칭
     public MemberEntity signIn(Auth.signIn member) {
         MemberEntity memberEntity = this.memberRepository.findByUserName(member.getUserName())
-                .orElseThrow(NoUsernameException::new);
+                .orElseThrow(NoExistsUsernameException::new);
         //passwordEncoder.matches(입력한 패스워드, 인코딩된패스워드)
         if (!this.passwordEncoder.matches(member.getPassword(), memberEntity.getPassword())) {
-            throw new NoMatchPassword();
+            throw new NoMatchPasswordException();
         }
         return memberEntity;
     }

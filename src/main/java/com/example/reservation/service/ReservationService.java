@@ -31,9 +31,9 @@ public class ReservationService {
     //가게가 있으면 예약 테이블에 데이터 update
     public ReservationEntity reservation(NewReservation reservation) {
         this.storeRepository.findByStoreName(reservation.getStoreName())
-                .orElseThrow(NoStorenameException::new);
+                .orElseThrow(NoExistsStorenameException::new);
         this.memberRepository.findByUserName(reservation.getName())
-                .orElseThrow(NoUsernameException::new);
+                .orElseThrow(NoExistsUsernameException::new);
         if (reservation.getCount() > 10) {
             throw new MaximumNumberExceedException();
         }
@@ -52,7 +52,7 @@ public class ReservationService {
         boolean exists = memberRepository.existsByUserName(name);
 
         if (!exists) {
-            throw new NoUsernameException();
+            throw new NoExistsUsernameException();
         }
 
         List<ReservationEntity> reservationEntityList =

@@ -3,7 +3,7 @@ package com.example.reservation.exception.impl;
 import com.example.reservation.exception.AbstractException;
 import org.springframework.http.HttpStatus;
 
-public class NoMatchManagerNameException extends AbstractException {
+public class NoMatchNameException extends AbstractException {
     @Override
     public int getStatusCode() {
         return HttpStatus.BAD_REQUEST.value();

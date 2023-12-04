@@ -1,6 +1,7 @@
 package com.example.reservation.controller;
 
 import com.example.reservation.domain.ReviewEntity;
+import com.example.reservation.model.Auth;
 import com.example.reservation.model.FindReviewResult;
 import com.example.reservation.model.Review;
 import com.example.reservation.service.ReviewService;
@@ -39,16 +40,31 @@ public class ReviewController {
     //리뷰 수정
     @PutMapping("/modify")
     @PreAuthorize("hasRole('USER')")
-    public void modifyReview( @RequestParam Long reviewId,
-                              @RequestBody Review review) {
+    public void modifyReview(@RequestParam Long reviewId,
+                             @RequestBody Review review) {
         this.reviewService.modifyReview(review, reviewId);
     }
 
-    //리뷰 제거
-    @DeleteMapping("/delete")
-    @PreAuthorize("hasRole('USER') and hasRole('MANAGER')")
-    public ResponseEntity<?> deleteReview() {
+    //리뷰 제거 (고객용)
+    @DeleteMapping("/delete/user")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> deleteReviewUser(@RequestParam Long reviewId,
+                                              @RequestBody Auth.signIn auth
+    ) {
+        ReviewEntity reviewEntity = this.reviewService.deleteReviewUser(reviewId,
+                auth.getUserName(), auth.getPassword());
+        return ResponseEntity.ok(reviewEntity);
+    }
 
-        return null;
+    //리뷰 제거(매니저용)
+    @DeleteMapping("/delete/manager")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<?> deleteReviewManager(@RequestParam Long reviewId,
+                                                 @RequestBody Auth.signIn auth
+
+    ) {
+        ReviewEntity reviewEntity = this.reviewService.deleteReviewManager(reviewId,
+                auth.getUserName(), auth.getPassword());
+        return ResponseEntity.ok(reviewEntity);
     }
 }
