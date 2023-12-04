@@ -1,0 +1,8 @@
+spring:
+  jwt:
+    secret: QERS23LoeiopLLWWERDFSCVNjkn290f98dfjwerDFWFPpKMNij23Qtdb3jPywmtando0LXNlY
+
+  security:
+    user:
+      name: user
+      password: 1234
