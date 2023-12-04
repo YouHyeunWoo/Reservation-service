@@ -77,7 +77,7 @@ public class ReviewService {
         this.reviewRepository.save(reviewEntity);
     }
 
-    //리뷰 제거
+    //리뷰 삭제
     public ReviewEntity deleteReview(){
 
 
