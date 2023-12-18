@@ -76,7 +76,7 @@ public class ReviewService {
         ReviewEntity reviewEntity = this.reviewRepository.findByStoreNameAndId(storeEntity.getStoreName(), reviewId)
                 .orElseThrow(() -> new RuntimeException("해당 매장에 등록된 리뷰가 아닙니다."));
 
-        reviewEntity.setReview(review.getReview());
+        reviewEntity.setReview(review.getText());
         reviewEntity.setScore(review.getScore());
         this.reviewRepository.save(reviewEntity);
     }
